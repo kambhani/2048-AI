@@ -8,7 +8,7 @@ random.seed(SEED)
 np.random.seed(SEED)
 
 def play_game(index: int):
-    game = Game(9, 3, 2)
+    game = Game(6, 3, 2)
     while not game.game_over():
         action = random.choice(game.available_actions())
         game.do_action(action)

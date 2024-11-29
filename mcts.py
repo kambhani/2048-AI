@@ -14,7 +14,7 @@ def play_random_moves(game: Game):
     return game.score()
 
 def play_game(index: int):
-    game = Game(9, 3, 2)
+    game = Game(6, 3, 2)
     while not game.game_over():
         actions = game.available_actions()
         best_action = -1
@@ -26,10 +26,8 @@ def play_game(index: int):
             if np.mean(scores) > best_score:
                 best_score = np.mean(scores)
                 best_action = action
-        print(best_action)
         game.do_action(best_action)
 
-    print(f"{game.score()} {game.max_tile()}")
     return game.score(), game.max_tile()
 
 
