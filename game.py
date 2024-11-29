@@ -1,6 +1,7 @@
 # This code is heavily based off of https://github.com/Shilun-Allan-Li/2048-reinforcement_learning/blob/master/game.py
 
 import numpy as np
+import numba as nb
 
 ACTION_NAMES = ["left", "up", "right", "down"]
 ACTION_LEFT = 0
@@ -8,6 +9,15 @@ ACTION_UP = 1
 ACTION_RIGHT = 2
 ACTION_DOWN = 3
 
+spec = [
+    ('_n', nb.int32),
+    ('_t', nb.int32),
+    ('_r', nb.int32),
+    ('_state', nb.int32[:, :]),
+    ('_score', nb.int32)
+]
+
+@nb.experimental.jitclass(spec)
 class Game:
     def __init__(self, n=4, t=2, r=1, state=None, initial_score=0):
         """Init the Game object.
@@ -25,7 +35,7 @@ class Game:
         self._t = t
         self._r = r
         if state is None:
-            self._state = np.zeros((n, n), dtype=int)
+            self._state = np.zeros((n, n), dtype=np.int32)
             self.add_random_tile()
             self.add_random_tile()
         else:
@@ -100,7 +110,7 @@ class Game:
 
         for row in range(self._n):
             # Temporary storage for the row after processing
-            new_row = np.zeros(self._n, dtype=int)
+            new_row = np.zeros(self._n, dtype=np.int32)
             current_index = 0
             sequence_count = 0
             current_value = 0
@@ -146,8 +156,7 @@ class Game:
             return
 
         empty_index = np.random.choice(len(x_pos))
-        value = np.random.choice([1, 2], p=[0.9, 0.1])
-
+        value = 1 if np.random.random() < 0.9 else 2
         self._state[x_pos[empty_index], y_pos[empty_index]] = value
 
     def print_state(self):

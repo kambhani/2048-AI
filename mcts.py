@@ -13,7 +13,8 @@ def play_random_moves(game: Game):
         game.do_action(action)
     return game.score()
 
-def play_game(game: Game):
+def play_game(index: int):
+    game = Game(9, 3, 2)
     while not game.game_over():
         actions = game.available_actions()
         best_action = -1
@@ -21,18 +22,20 @@ def play_game(game: Game):
         for action in actions:
             game_copy = game.copy()
             game_copy.do_action(action)
-            scores = [play_random_moves(game_copy.copy()) for _ in range(50)]
+            scores = [play_random_moves(game_copy.copy()) for _ in range(30)]
             if np.mean(scores) > best_score:
                 best_score = np.mean(scores)
                 best_action = action
+        print(best_action)
         game.do_action(best_action)
 
+    print(f"{game.score()} {game.max_tile()}")
     return game.score(), game.max_tile()
+
 
 if __name__ == '__main__':
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        games = [Game(9, 3, 2) for _ in range(500)]
-        results = list(executor.map(play_game, games))
+        results = list(executor.map(play_game, np.arange(200)))
 
     for result in results:
         print(f"{result[0]} {result[1]}")
