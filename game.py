@@ -8,7 +8,7 @@ ACTION_LEFT = 0
 ACTION_UP = 1
 ACTION_RIGHT = 2
 ACTION_DOWN = 3
-directions = [(0,1), (0,-1), (1,0), (-1,0)]
+directions = np.array([(0,1), (0,-1), (1,0), (-1,0)])
 
 spec = [
     ('_n', nb.int32),
@@ -166,7 +166,7 @@ class Game:
 
     def spawn_points(self):
         """Returns list of potential spawn points."""
-        return [tuple(tile) for tile in np.argwhere(self._state == 0)]
+        return np.argwhere(self._state == 0)
 
     def num_available_merges(self):
         """Returns number of available merges."""
@@ -175,7 +175,7 @@ class Game:
             for col in range(self._n):
                 if self._state[row,col] == 0:
                     continue
-                neighbors = [(row + dx, col + dy) for dx, dy in directions]
+                neighbors = np.array([(row + dx, col + dy) for dx, dy in directions])
                 for neighbor_row, neighbor_col in neighbors:
                     if not (0 <= neighbor_row < self._n and 0 <= neighbor_col < self._n):
                         continue
