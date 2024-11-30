@@ -28,13 +28,26 @@ def expectimax(game: Game, depth: int, maximizing: bool):
     else:
         avg_score = 0
         spawn_points = game.spawn_points()
-        num_pairs = len(spawn_points) ** 2 - len(spawn_points)
+        num_spawn_points = len(spawn_points)
+
+        if num_spawn_points == 1:
+            sp = spawn_points[0]
+            game_copy = game.copy()
+            
+            game_copy.set_tile_power((sp[0], sp[1]), 1)
+            avg_score += expectimax(game_copy, depth + 1, True) / 2
+            
+            game_copy.set_tile_power((sp[0], sp[1]), 2)
+            avg_score += expectimax(game_copy, depth + 1, True) / 2
+            
+            return avg_score
+
+        num_pairs = num_spawn_points ** 2 - num_spawn_points
         num_outcomes = num_pairs * len(spawns)
 
-        for s1 in spawn_points:
-            for s2 in spawn_points:
-                if np.array_equal(s1, s2):
-                    continue
+        for i in range(num_spawn_points):
+            for j in range(i + 1, num_spawn_points):
+                s1, s2 = spawn_points[i], spawn_points[j]
                 for s1_power, s2_power in spawns:
                     game_copy = game.copy()
                     game_copy.set_tile_power((s1[0], s1[1]), s1_power)                
