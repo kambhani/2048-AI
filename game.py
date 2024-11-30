@@ -8,6 +8,7 @@ ACTION_LEFT = 0
 ACTION_UP = 1
 ACTION_RIGHT = 2
 ACTION_DOWN = 3
+directions = [(0,1), (0,-1), (1,0), (-1,0)]
 
 spec = [
     ('_n', nb.int32),
@@ -45,6 +46,10 @@ class Game:
     def copy(self):
         """Return a copy of self."""
         return Game(self._n, self._t, self._r, np.copy(self._state), self._score)
+
+    def set_tile_power(self, tile, power):
+        """Sets tile power to power."""
+        self._state[tile] = power
 
     def game_over(self):
         """Whether the game is over."""
@@ -158,6 +163,24 @@ class Game:
         empty_index = np.random.choice(len(x_pos))
         value = 1 if np.random.random() < 0.9 else 2
         self._state[x_pos[empty_index], y_pos[empty_index]] = value
+
+    def spawn_points(self):
+        """Returns list of potential spawn points."""
+        return [tuple(tile) for tile in np.argwhere(self._state == 0)]
+
+    def num_available_merges(self):
+        """Returns number of available merges."""
+        num_merges = 0
+        for row in range(self._n):
+            for col in range(self._n):
+                if self._state[row,col] == 0:
+                    continue
+                neighbors = [(row + dx, col + dy) for dx, dy in directions]
+                for neighbor_row, neighbor_col in neighbors:
+                    if not (0 <= neighbor_row < self._n and 0 <= neighbor_col < self._n):
+                        continue
+                    num_merges += int(self._state[neighbor_row, neighbor_col] == self._state[row, col])
+        return num_merges / 2
 
     def print_state(self):
         """Prints the current state."""
