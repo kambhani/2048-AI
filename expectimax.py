@@ -4,7 +4,7 @@ import time
 import math
 import concurrent.futures
 
-MAX_DEPTH = 5
+MAX_DEPTH = 2
 spawns = [(1,1), (1,2), (2,1), (2,2)]
 spawn_probs = [0.81, 0.09, 0.09, 0.01]
 
@@ -59,8 +59,9 @@ def expectimax(game: Game, depth: int, maximizing: bool):
                     avg_score += outcome_prob * expectimax(game_copy, depth + 1, True)                 
         return avg_score
 
-def play_game(_: int):
+def play_game(index: int):
     game = Game(6, 3, 2)
+    print(f"started {index}")
     start = time.time()
     while not game.game_over():
         next_action = expectimax(game, 0, True)
@@ -68,11 +69,13 @@ def play_game(_: int):
         print(f"scored {game.score()} with max tile of {game.max_tile()}")
     end = time.time()
     print(f"Finished game in {end-start:0.2f} seconds")
+    with open("expectimax_results.txt", "a") as results_file:
+        results_file.write(f"{game.score()} {game.max_tile()}\n")
     return game.score(), game.max_tile()
 
 if __name__ == '__main__':
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        results = list(executor.map(play_game, np.arange(1)))
+        results = list(executor.map(play_game, np.arange(200)))
 
     for result in results:
         print(f"{result[0]} {result[1]}")
@@ -81,3 +84,4 @@ if __name__ == '__main__':
     max_tiles = np.array([result[1] for result in results])
     unique_max_tiles, counts = np.unique(max_tiles, return_counts=True)
     print(f"Most common max tile: {unique_max_tiles[np.argmax(counts)]}")
+
