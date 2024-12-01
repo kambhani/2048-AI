@@ -4,7 +4,7 @@ import time
 import math
 import concurrent.futures
 
-MAX_DEPTH = 1
+MAX_DEPTH = 5
 spawns = [(1,1), (1,2), (2,1), (2,2)]
 spawn_probs = [(0.9*0.9), (0.9*0.1), (0.9*0.1), (0.1*0.1)]
 
@@ -33,7 +33,7 @@ def expectimax(game: Game, depth: int, maximizing: bool):
     else:
         avg_score = 0
         spawn_points = game.spawn_points()
-        num_spawn_points = max(4, len(spawn_points))
+        num_spawn_points = min(4, len(spawn_points))
 
         if num_spawn_points == 1:
             sp = spawn_points[0]
@@ -83,6 +83,10 @@ if __name__ == '__main__':
     for result in results:
         print(f"{result[0]} {result[1]}")
     print(f"Mean score: {np.mean([result[0] for result in results])}")
+    
+    max_tiles = np.array([result[1] for result in results])
+    unique_max_tiles, counts = np.unique(max_tiles, return_counts=True)
+    print(f"Most common max tile: {unique_max_tiles[np.argmax(counts)]}")
     
     #start = time.time()
     #print(play_game(1))
