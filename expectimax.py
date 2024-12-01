@@ -9,12 +9,9 @@ spawns = [(1,1), (1,2), (2,1), (2,2)]
 spawn_probs = [(0.9*0.9), (0.9*0.1), (0.9*0.1), (0.1*0.1)]
 
 def evaluate(game: Game):
-    score_weight = 0.5
-    available_merges_weight = 1
-    empty_tiles_weight = 10
-    smoothness_weight = 4
-    max_weight = 1
-    return (score_weight * game.score()) + (available_merges_weight * game.num_available_merges() + (empty_tiles_weight *len(game.spawn_points())) + (max_weight * game.max_tile()) + (smoothness_weight * game.smoothness())) 
+    weights = [0.5, 1, 10, 4, 1]
+    heuristics = [game.score(), game.num_available_merges(), len(game.spawn_points()), game.max_tile(), game.smoothness()]
+    return sum([weight * heuristic for weight, heuristic in list(zip(weights, heuristics))])
 
 def expectimax(game: Game, depth: int, maximizing: bool):
     if depth == MAX_DEPTH or game.game_over():
@@ -36,29 +33,28 @@ def expectimax(game: Game, depth: int, maximizing: bool):
     else:
         avg_score = 0
         spawn_points = game.spawn_points()
-        num_spawn_points = len(spawn_points)
-        
-        if num_spawn_points == 0:
-            return evaluate(game)
+        num_spawn_points = max(4, len(spawn_points))
 
         if num_spawn_points == 1:
             sp = spawn_points[0]
             game_copy = game.copy()
             
             game_copy.set_tile_power((sp[0], sp[1]), 1)
-            avg_score += expectimax(game_copy, depth + 1, True) / 2
+            avg_score += 0.9 * expectimax(game_copy, depth + 1, True)
             
             game_copy.set_tile_power((sp[0], sp[1]), 2)
-            avg_score += expectimax(game_copy, depth + 1, True) / 2
+            avg_score += 0.1 * expectimax(game_copy, depth + 1, True) / 2
             
             return avg_score
 
-        num_pairs = num_spawn_points ** 2 - num_spawn_points
-        num_outcomes = num_pairs * len(spawns)
+        # num_pairs = num_spawn_points ** 2 - num_spawn_points
+        # num_outcomes = num_pairs * len(spawns)
 
+        random_indices = np.random.choice(spawn_points.shape[0], size=num_spawn_points, replace=False)
+        selected_spawn_points = spawn_points[random_indices]
         for i in range(num_spawn_points):
             for j in range(i + 1, num_spawn_points):
-                s1, s2 = spawn_points[i], spawn_points[j]
+                s1, s2 = selected_spawn_points[i], selected_spawn_points[j]
                 for k, (s1_power, s2_power) in enumerate(spawns):
                     game_copy = game.copy()
                     game_copy.set_tile_power((s1[0], s1[1]), s1_power)                
@@ -69,7 +65,7 @@ def expectimax(game: Game, depth: int, maximizing: bool):
         return avg_score
 
 
-def play_game(index:int):
+def play_game(index: int):
     game = Game(6, 3, 2)
     while not game.game_over():
         start = time.time()
@@ -77,7 +73,7 @@ def play_game(index:int):
         game.do_action(next_action)
         #print(next_action)
         end = time.time()
-        #print(f"Chose action in {end-start:0.2f} seconds")
+        print(f"Chose action in {end-start:0.2f} seconds")
     return game.score(), game.max_tile()
 
 if __name__ == '__main__':
