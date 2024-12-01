@@ -95,8 +95,8 @@ class Game:
 
         return False
 
-    def do_action(self, action):
-        """Execute action, add a new tile, update the score & return the reward."""
+    def do_action(self, action, spawn=True):
+        """Execute action, add a new tile (if spawn = True), update the score & return the reward."""
 
         if not self.is_action_available(action):
             return 0
@@ -105,8 +105,9 @@ class Game:
         self._state = np.rot90(temp_state, -action)
         self._score += reward
 
-        for _ in range(self._r):
-            self.add_random_tile()
+        if spawn:
+          for _ in range(self._r):
+              self.add_random_tile()
 
         return reward
 
@@ -222,7 +223,7 @@ class Game:
         """Return maximum tile."""
         return self._t ** np.max(self._state)
     
-    #Heuristics
+    # Heuristics
     def is_valid(self, cell):
         return (cell[0] >= 0) and (cell[0] < self._n) and (cell[1] >= 0) and (cell[1] < self._n)
     
@@ -249,5 +250,3 @@ class Game:
                     if neighbor_cell_value:
                         smoothness -= abs(cell_value - neighbor_cell_value)
         return smoothness
-                    
-                     
