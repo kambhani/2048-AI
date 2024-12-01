@@ -2,6 +2,8 @@
 
 import numpy as np
 import numba as nb
+import math
+import time
 
 ACTION_NAMES = ["left", "up", "right", "down"]
 ACTION_LEFT = 0
@@ -219,3 +221,33 @@ class Game:
     def max_tile(self):
         """Return maximum tile."""
         return self._t ** np.max(self._state)
+    
+    #Heuristics
+    def is_valid(self, cell):
+        return (cell[0] >= 0) and (cell[0] < self._n) and (cell[1] >= 0) and (cell[1] < self._n)
+    
+    def find_neighboring_cell(self, cell, direction):
+        curr_cell = cell
+        while True:
+            curr_cell = (curr_cell[0] + direction[0], curr_cell[1] + direction[1])
+            if (not self.is_valid(curr_cell)) or (self._state[curr_cell[0], curr_cell[1]] != 0): break
+        return curr_cell
+    
+    def smoothness(self):
+        directions = [(0, 1), (1, 0)]
+        smoothness = 0
+        for i in range(self._n):
+            for j in range(self._n):
+                cell_value = self._state[i, j]
+                if cell_value == 0:
+                    continue
+                for direction in directions:
+                    neighbor_cell = self.find_neighboring_cell(cell=(i, j), direction=direction)
+                    neighbor_cell_value = 0
+                    if self.is_valid(neighbor_cell):
+                        neighbor_cell_value = self._state[neighbor_cell[0], neighbor_cell[1]]
+                    if neighbor_cell_value:
+                        smoothness -= abs(cell_value - neighbor_cell_value)
+        return smoothness
+                    
+                     
